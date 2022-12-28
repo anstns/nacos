@@ -2,14 +2,16 @@ package nacos
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net"
+	"strconv"
+
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/resolver"
-	"net"
-	"strconv"
 )
 
 func init() {
@@ -28,7 +30,8 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	if err != nil {
 		return nil, errors.Wrap(err, "Wrong nacos URL")
 	}
-
+	data, _ := json.Marshal(tgt)
+	fmt.Printf("data-[%s]", string(data))
 	host, ports, err := net.SplitHostPort(tgt.Addr)
 	if err != nil {
 		return nil, fmt.Errorf("failed parsing address error: %v", err)
@@ -75,7 +78,7 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	})
 
 	go populateEndpoints(ctx, conn, pipe)
-
+	fmt.Println("success")
 	return &resolvr{cancelFunc: cancel}, nil
 }
 
