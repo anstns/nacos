@@ -60,6 +60,12 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 		cc.LogLevel = tgt.LogLevel
 	}
 
+	if tgt.Clusters == nil || len(tgt.Clusters) == 0 {
+		tgt.Clusters = []string{"DEFAULT"}
+	}
+	if tgt.GroupName == "" {
+		tgt.GroupName = "DEFAULT_GROUP"
+	}
 	cli, err := clients.NewNamingClient(vo.NacosClientParam{
 		ServerConfigs: sc,
 		ClientConfig:  cc,
