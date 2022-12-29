@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"time"
 
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
@@ -76,7 +77,7 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 		GroupName:         tgt.GroupName,
 		SubscribeCallback: newWatcher(ctx, cancel, pipe).CallBackHandle, // required
 	})
-
+	time.Sleep(1 * time.Second)
 	go populateEndpoints(ctx, conn, pipe)
 	fmt.Println("success")
 	return &resolvr{cancelFunc: cancel}, nil
