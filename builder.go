@@ -44,10 +44,11 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	}
 
 	cc := &constant.ClientConfig{
-		NamespaceId: tgt.NamespaceID,
-		Username:    tgt.User,
-		Password:    tgt.Password,
-		TimeoutMs:   uint64(tgt.Timeout),
+		NamespaceId:         tgt.NamespaceID,
+		Username:            tgt.User,
+		Password:            tgt.Password,
+		TimeoutMs:           uint64(tgt.Timeout),
+		NotLoadCacheAtStart: true,
 	}
 
 	if tgt.CacheDir != "" {
@@ -78,14 +79,14 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	ctx, cancel := context.WithCancel(context.Background())
 	pipe := make(chan []string)
 
-	cli.Subscribe(&vo.SubscribeParam{
+	go cli.Subscribe(&vo.SubscribeParam{
 		ServiceName:       tgt.Service,
 		Clusters:          tgt.Clusters,
 		GroupName:         tgt.GroupName,
 		SubscribeCallback: newWatcher(ctx, cancel, pipe).CallBackHandle, // required
 	})
 	time.Sleep(1 * time.Second)
-	populateEndpoints(ctx, conn, pipe)
+	go populateEndpoints(ctx, conn, pipe)
 	fmt.Println("success")
 	return &resolvr{cancelFunc: cancel}, nil
 }
