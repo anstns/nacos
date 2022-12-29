@@ -11,13 +11,14 @@ import (
 )
 
 type target struct {
-	Addr        string        `key:",optional"`
-	User        string        `key:",optional"`
-	Password    string        `key:",optional"`
-	Service     string        `key:",optional"`
-	GroupName   string        `key:",optional"`
-	Clusters    []string      `key:",optional"`
-	NamespaceID string        `key:"namespaceid,optional"`
+	Addr        string        `key:"addr,optional"`
+	User        string        `key:"user,optional"`
+	Password    string        `key:"password,optional"`
+	AppName     string        `key:"app_name,optional"`
+	Service     string        `key:"service,optional"`
+	GroupName   string        `key:"group_name,optional"`
+	Clusters    []string      `key:"clusters,optional"`
+	NamespaceID string        `key:"namespace_id,optional"`
 	Timeout     time.Duration `key:"timeout,optional"`
 
 	LogLevel string `key:",optional"`

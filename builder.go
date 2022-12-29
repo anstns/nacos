@@ -2,17 +2,14 @@ package nacos
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"net"
-	"strconv"
-	"time"
-
-	"github.com/nacos-group/nacos-sdk-go/clients"
-	"github.com/nacos-group/nacos-sdk-go/common/constant"
-	"github.com/nacos-group/nacos-sdk-go/vo"
+	"github.com/nacos-group/nacos-sdk-go/v2/clients"
+	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/resolver"
+	"net"
+	"strconv"
 )
 
 func init() {
@@ -31,8 +28,7 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	if err != nil {
 		return nil, errors.Wrap(err, "Wrong nacos URL")
 	}
-	data, _ := json.Marshal(tgt)
-	fmt.Printf("data-[%s]", string(data))
+
 	host, ports, err := net.SplitHostPort(tgt.Addr)
 	if err != nil {
 		return nil, fmt.Errorf("failed parsing address error: %v", err)
@@ -44,6 +40,8 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	}
 
 	cc := &constant.ClientConfig{
+		// 订阅者名称，显示在 Nacos UI 中
+		AppName:             tgt.AppName,
 		NamespaceId:         tgt.NamespaceID,
 		Username:            tgt.User,
 		Password:            tgt.Password,
@@ -61,13 +59,6 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 		cc.LogLevel = tgt.LogLevel
 	}
 
-	if tgt.Clusters == nil || len(tgt.Clusters) == 0 {
-		tgt.Clusters = []string{"DEFAULT"}
-	}
-	if tgt.GroupName == "" {
-		tgt.GroupName = "DEFAULT_GROUP"
-		//
-	}
 	cli, err := clients.NewNamingClient(vo.NacosClientParam{
 		ServerConfigs: sc,
 		ClientConfig:  cc,
@@ -85,9 +76,9 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 		GroupName:         tgt.GroupName,
 		SubscribeCallback: newWatcher(ctx, cancel, pipe).CallBackHandle, // required
 	})
-	time.Sleep(1 * time.Second)
+
 	go populateEndpoints(ctx, conn, pipe)
-	fmt.Println("success")
+
 	return &resolvr{cancelFunc: cancel}, nil
 }
 
