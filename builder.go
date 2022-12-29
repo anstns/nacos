@@ -65,6 +65,7 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	}
 	if tgt.GroupName == "" {
 		tgt.GroupName = "DEFAULT_GROUP"
+		//
 	}
 	cli, err := clients.NewNamingClient(vo.NacosClientParam{
 		ServerConfigs: sc,
