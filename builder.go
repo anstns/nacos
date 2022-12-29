@@ -3,13 +3,14 @@ package nacos
 import (
 	"context"
 	"fmt"
+	"net"
+	"strconv"
+
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/resolver"
-	"net"
-	"strconv"
 )
 
 func init() {
@@ -41,12 +42,11 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 
 	cc := &constant.ClientConfig{
 		// 订阅者名称，显示在 Nacos UI 中
-		AppName:             tgt.AppName,
-		NamespaceId:         tgt.NamespaceID,
-		Username:            tgt.User,
-		Password:            tgt.Password,
-		TimeoutMs:           uint64(tgt.Timeout),
-		NotLoadCacheAtStart: true,
+		AppName:     tgt.AppName,
+		NamespaceId: tgt.NamespaceID,
+		Username:    tgt.User,
+		Password:    tgt.Password,
+		TimeoutMs:   uint64(tgt.Timeout),
 	}
 
 	if tgt.CacheDir != "" {
