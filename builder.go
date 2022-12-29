@@ -78,14 +78,14 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	ctx, cancel := context.WithCancel(context.Background())
 	pipe := make(chan []string)
 
-	go cli.Subscribe(&vo.SubscribeParam{
+	cli.Subscribe(&vo.SubscribeParam{
 		ServiceName:       tgt.Service,
 		Clusters:          tgt.Clusters,
 		GroupName:         tgt.GroupName,
 		SubscribeCallback: newWatcher(ctx, cancel, pipe).CallBackHandle, // required
 	})
 	time.Sleep(1 * time.Second)
-	go populateEndpoints(ctx, conn, pipe)
+	populateEndpoints(ctx, conn, pipe)
 	fmt.Println("success")
 	return &resolvr{cancelFunc: cancel}, nil
 }
