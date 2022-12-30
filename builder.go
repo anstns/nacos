@@ -42,11 +42,12 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 
 	cc := &constant.ClientConfig{
 		// 订阅者名称，显示在 Nacos UI 中
-		AppName:     tgt.AppName,
-		NamespaceId: tgt.NamespaceID,
-		Username:    tgt.User,
-		Password:    tgt.Password,
-		TimeoutMs:   uint64(tgt.Timeout),
+		AppName:             tgt.AppName,
+		NamespaceId:         tgt.NamespaceID,
+		Username:            tgt.User,
+		Password:            tgt.Password,
+		TimeoutMs:           uint64(tgt.Timeout),
+		NotLoadCacheAtStart: true,
 	}
 
 	if tgt.CacheDir != "" {
@@ -70,12 +71,17 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	ctx, cancel := context.WithCancel(context.Background())
 	pipe := make(chan []string)
 
-	go cli.Subscribe(&vo.SubscribeParam{
-		ServiceName:       tgt.Service,
-		Clusters:          tgt.Clusters,
-		GroupName:         tgt.GroupName,
-		SubscribeCallback: newWatcher(ctx, cancel, pipe).CallBackHandle, // required
-	})
+	go func() {
+		err := cli.Subscribe(&vo.SubscribeParam{
+			ServiceName:       tgt.Service,
+			Clusters:          tgt.Clusters,
+			GroupName:         tgt.GroupName,
+			SubscribeCallback: newWatcher(ctx, cancel, pipe).CallBackHandle, // required
+		})
+		if err != nil {
+			panic(err)
+		}
+	}()
 
 	go populateEndpoints(ctx, conn, pipe)
 
