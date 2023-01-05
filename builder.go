@@ -37,7 +37,7 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	port, _ := strconv.ParseUint(ports, 10, 16)
 
 	sc := []constant.ServerConfig{
-		*constant.NewServerConfig(host, port),
+		*constant.NewServerConfig(host, port, constant.WithContextPath("/nacos")),
 	}
 
 	cc := &constant.ClientConfig{
