@@ -43,7 +43,7 @@ func (nw *watcher) CallBackHandle(services []model.Instance, err error) {
 	}
 	ee := make([]string, 0, len(services))
 	for _, s := range services {
-		ee = append(ee, fmt.Sprintf("%s:%d", s.Ip, s.Port))
+		ee = append(ee, fmt.Sprintf("%s:%s", s.Ip, s.Metadata["gRPC_port"]))
 	}
 	nw.out <- ee
 }
