@@ -1,12 +1,11 @@
 package nacos
 
 import (
-	"context"
 	"fmt"
 	"net"
+	"sort"
 	"strconv"
 
-	"github.com/nacos-group/nacos-sdk-go/util"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/v2/model"
@@ -70,8 +69,8 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 		return nil, errors.Wrap(err, "Couldn't connect to the nacos API")
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	pipe := make(chan []string)
+	// ctx, cancel := context.WithCancel(context.Background())
+	// pipe := make(chan []string)
 
 	go func() {
 		fmt.Println("Subscribe-ServiceName=", tgt.Service)
@@ -81,30 +80,15 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 			GroupName:   tgt.GroupName,
 			// SubscribeCallback: newWatcher(ctx, cancel, pipe).CallBackHandle, // required
 			SubscribeCallback: func(services []model.Instance, err error) {
-				fmt.Printf("callback return services:%s \n\n", util.ToJsonString(services))
+				// fmt.Printf("callback return services:%s \n\n", util.ToJsonString(services))
 				// ee := make([]string, 0, len(services))
 				for _, s := range services {
-					// ee = append(ee, fmt.Sprintf("%s:%d", s.Ip, s.Port))
 					fmt.Println("dis:=%s", fmt.Sprintf("%s:%d", s.Ip, s.Port))
-				}
+					conns := make([]resolver.Address, 0, 0)
+					conns = append(conns, resolver.Address{Addr: fmt.Sprintf("%s:%d", s.Ip, s.Port)})
+					sort.Sort(byAddressString(conns)) // Don't replace the same address list in the balancer
+					_ = conn.UpdateState(resolver.State{Addresses: conns})
 
-				for {
-					// select {
-					// case cc := <-input:
-					// 	connsSet := make(map[string]struct{}, len(cc))
-					// 	for _, c := range cc {
-					// 		connsSet[c] = struct{}{}
-					// 	}
-					// 	conns := make([]resolver.Address, 0, len(connsSet))
-					// 	for c := range connsSet {
-					// 		conns = append(conns, resolver.Address{Addr: c})
-					// 	}
-					// 	sort.Sort(byAddressString(conns)) // Don't replace the same address list in the balancer
-					// 	_ = conn.UpdateState(resolver.State{Addresses: conns})
-					// case <-ctx.Done():
-					// 	logx.Info("[Nacos resolver] Watch has been finished")
-					// 	return
-					// }
 				}
 			},
 		})
@@ -113,9 +97,9 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 		}
 	}()
 
-	go populateEndpoints(ctx, conn, pipe)
+	// go populateEndpoints(ctx, conn, pipe)
 
-	return &resolvr{cancelFunc: cancel}, nil
+	return &resolvr{}, nil
 }
 
 // Scheme returns the scheme supported by this resolver.
