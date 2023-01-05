@@ -72,9 +72,10 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 	pipe := make(chan []string)
 
 	go func() {
+		fmt.Println("Subscribe-ServiceName=", tgt.Service)
+		fmt.Println("Subscribe-GroupName=", tgt.GroupName)
 		err := cli.Subscribe(&vo.SubscribeParam{
 			ServiceName:       tgt.Service,
-			Clusters:          tgt.Clusters,
 			GroupName:         tgt.GroupName,
 			SubscribeCallback: newWatcher(ctx, cancel, pipe).CallBackHandle, // required
 		})
