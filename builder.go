@@ -6,8 +6,10 @@ import (
 	"net"
 	"strconv"
 
+	"github.com/nacos-group/nacos-sdk-go/util"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/v2/model"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc/resolver"
@@ -75,9 +77,36 @@ func (b *builder) Build(url resolver.Target, conn resolver.ClientConn, opts reso
 		fmt.Println("Subscribe-ServiceName=", tgt.Service)
 		fmt.Println("Subscribe-GroupName=", tgt.GroupName)
 		err := cli.Subscribe(&vo.SubscribeParam{
-			ServiceName:       tgt.Service,
-			GroupName:         tgt.GroupName,
-			SubscribeCallback: newWatcher(ctx, cancel, pipe).CallBackHandle, // required
+			ServiceName: tgt.Service,
+			GroupName:   tgt.GroupName,
+			// SubscribeCallback: newWatcher(ctx, cancel, pipe).CallBackHandle, // required
+			SubscribeCallback: func(services []model.Instance, err error) {
+				fmt.Printf("callback return services:%s \n\n", util.ToJsonString(services))
+				// ee := make([]string, 0, len(services))
+				for _, s := range services {
+					// ee = append(ee, fmt.Sprintf("%s:%d", s.Ip, s.Port))
+					fmt.Println("dis:=%s", fmt.Sprintf("%s:%d", s.Ip, s.Port))
+				}
+
+				for {
+					// select {
+					// case cc := <-input:
+					// 	connsSet := make(map[string]struct{}, len(cc))
+					// 	for _, c := range cc {
+					// 		connsSet[c] = struct{}{}
+					// 	}
+					// 	conns := make([]resolver.Address, 0, len(connsSet))
+					// 	for c := range connsSet {
+					// 		conns = append(conns, resolver.Address{Addr: c})
+					// 	}
+					// 	sort.Sort(byAddressString(conns)) // Don't replace the same address list in the balancer
+					// 	_ = conn.UpdateState(resolver.State{Addresses: conns})
+					// case <-ctx.Done():
+					// 	logx.Info("[Nacos resolver] Watch has been finished")
+					// 	return
+					// }
+				}
+			},
 		})
 		if err != nil {
 			panic(err)
